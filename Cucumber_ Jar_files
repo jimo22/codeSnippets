@@ -1,0 +1,12 @@
+
+
+Cucumber Jar files that you have to download
+There are few core Cucumber jars and couple of additional dependent jars that you need to download to make it run correctly. Below, we list out all these jars together with the version numbers that we will use as part of this tutorial series:
+
+cucumber-core-2.4.0.jar
+cucumber-java-2.4.0.jar
+cucumber-junit-2.4.0.jar
+cucumber-jvm-deps-1.0.6.jar
+gherkin-5.0.0.jar
+junit-4.12.jar
+mockito-all-1.10.19.jar
