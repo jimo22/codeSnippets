@@ -1,0 +1,50 @@
+
+
+https://www.youtube.com/watch?v=uv9tXFrTLtI
+
+https://www.youtube.com/watch?v=sNEcpw8LPpo
+
+Maven Repository
+https://mvnrepository.com/
+
+Setup Eclipse
+http://www.automationtestinghub.com/eclipse-ide-download-and-install/
+
+
+http://www.automationtestinghub.com/cucumber-eclipse-project/
+
+
+READ THIS MOFO
+http://www.automationtestinghub.com/cucumber-selenium-testing-tutorial/
+
+
+Appium for Cucumber on MOBILe
+http://www.automationtestinghub.com/appium-tutorial/
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Maven Repository
+https://mvnrepository.com/
+
+Cucumber Jar files that you have to download
+There are few core Cucumber jars and couple of additional dependent jars that you need to download to make it run correctly. Below, we list out all these jars together with the version numbers that we will use as part of this tutorial series:
+
+cucumber-core-2.4.0.jar
+cucumber-java-2.4.0.jar
+cucumber-junit-2.4.0.jar
+cucumber-jvm-deps-1.0.6.jar
+gherkin-5.0.0.jar
+junit-4.12.jar
+mockito-all-1.10.19.jar
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+https://www.seleniumhq.org/download/
+
+Setting up Cucumber and running in Eclipse
+http://www.automationtestinghub.com/download-cucumber-and-selenium-jars/
+http://www.automationtestinghub.com/cucumber-eclipse-project/
+http://www.automationtestinghub.com/add-cucumber-feature-file/
+
+
