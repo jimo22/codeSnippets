@@ -1,0 +1,41 @@
+
+
+JAVA
+
+driver.findElement(By.id("Value")).sendKeys(Keys.RETURN);
+OR,
+driver.findElement(By.id("Value")).sendKeys(Keys.ENTER);
+
+
+PYTHON
+
+from selenium.webdriver.common.keys import Keys
+driver.find_element_by_name("Value").send_keys(Keys.RETURN)
+OR,
+driver.find_element_by_name("Value").send_keys(Keys.ENTER)
+OR,
+element = driver.find_element_by_id("Value")
+element.send_keys("keysToSend")
+element.submit()
+
+
+RUBY
+
+element = @driver.find_element(:name, "value")
+element.send_keys "keysToSend"
+element.submit
+OR,
+element = @driver.find_element(:name, "value")
+element.send_keys "keysToSend"
+element.send_keys:return
+OR,
+@driver.action.send_keys(:enter).perform
+@driver.action.send_keys(:return).perform
+
+
+C#
+
+driver.FindElement(By.Id("Value")).SendKeys(Keys.Return);
+OR,
+driver.FindElement(By.Id("Value")).SendKeys(Keys.Enter);
+
