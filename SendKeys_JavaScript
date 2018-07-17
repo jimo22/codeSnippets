@@ -1,0 +1,6 @@
+
+WebElement wb = driver.findElement(By.name("phone"));
+JavascriptExecutor jse = (JavascriptExecutor)driver;
+jse.executeScript("arguments[0].value='(222)222-2222';", wb);
+jse.executeScript("document.getElementById('ssn').value='555-55-5555';");
+
