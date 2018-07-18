@@ -1,0 +1,16 @@
+One way is  keep on polling for the Element using Explicit Wait by adding try catch block.
+
+Logic:
+                     for(int i=0;i<5;i++)
+                    {
+                               try{
+                                              //find the element;
+                                               if element is displayed
+                                               break;
+                               }
+                                catch(Exception e)
+                               {
+
+                              }
+                          Thread.sleep(1000);
+                  }
