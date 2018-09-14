@@ -1,0 +1,776 @@
+package com.bbvacompass.salesforce.stepDefinitions;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.StaleElementReferenceException;
+import com.bbvacompass.thread_safety.MutualExclusion;
+
+import cucumber.api.Scenario;
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class SalesforceCRMSteps extends SalesforceCRMDefinitions {
+
+	String url = "";
+	String urltest = "";
+	String env = "";
+	WebDriver driver;
+
+	/**
+	 * Setup Method. Calls the setup(Scenario) method in MyStepDefinitions.java
+	 * Sets the url based on environment passed in maven command.
+	 * 
+	 * @param scenario
+	 *            The current scenario.
+	 */
+	@Before
+	public void setup(Scenario scenario) {
+		this.env = System.getProperty("environment", "IT"); // gets the
+															// environment maven
+															// variable,
+															// defaults to QA if
+															// not found.
+		super.env = this.env;
+		super.setup(scenario); // call to MyStepDefinition setup method.
+		driver = getDriver();
+		setImplicitWaitTime(30);
+		// urltest = "https:test.salesforce.com";
+		switch (this.env) {
+		case "UAT": // if environment = UAT
+			url = "https://adfs.bbvacompass.com/adfs/ls/idpinitiatedsignon.aspx?LoginToRP=https://bbvacompass--UAT.cs65.my.salesforce.com"; // UAT
+																																			// environment
+																																			// url.
+			// url = "https:test.salesforce.com";
+
+			break;
+		case "QA": // if environment = QA
+			url = "https://adfs.bbvacompass.com/adfs/ls/idpinitiatedsignon.aspx?LoginToRP=https://bbvacompass--QA.cs8.my.salesforce.com"; // QA
+																																			// environment
+																																			// url.
+			// url = "https:test.salesforce.com";
+
+			break;
+		case "IT": // if environment = test.salesforce.com
+			url = "https:test.salesforce.com";
+
+			break;
+
+		default: // else
+			url = "https://" + env.toLowerCase().trim() + ".bbvacompass.com/"; // Default
+																				// to
+																				// environment.bbvacompass.com
+		}
+		navigateTo(url);
+	}
+
+	/**
+	 * Calls the teardown method in MyStepDefinitions.java
+	 */
+	@After
+	public void tearDown() {
+		super.tearDown(); // call to teardown in MyStepDefinitions.
+	}
+
+	/**
+	 * Navigates to the url already stored in the url variable.
+	 */
+	@When("^I navigate to the url$")
+	public void I_navigates_to_the_url() {
+		navigateTo(url); // call to cucumber-selenium.
+		write("using url= " + url); // call to cucumber-selenium. Writes the
+									// current url to the cucumber report.
+	}
+
+	/**
+	 * Navigates to the url already stored in the url variable.
+	 */
+	@When("^the user is logged in to Salesforce SSO$")
+	public void user_logged_into_salesforce_SSO() {
+		navigateTo(url); // call to cucumber-selenium.
+		write("using url= " + url); // call to cucumber-selenium. Writes the
+									// current url to the cucumber report.
+	}
+
+	/**
+	 * Navigates to the url given as an argument.
+	 * 
+	 * @param url
+	 *            The url to navigate to.
+	 */
+	@When("^I navigate to \"([^\"]*)\"$")
+	public void iNavigateTo(String urlArg) {
+		navigateTo(urlArg); // call to cucumber-selenium.
+		write("using url= " + urlArg); // call to cucumber-selenium. Writes the
+										// current url to the cucumber report.
+	}
+
+	@When("^user waits \"([^\"]*)\" seconds$")
+	public void user_waits_seconds(String secs) {
+
+		sleep(Integer.parseInt(secs));
+	}
+
+	/**
+	 * Types a value into a field.
+	 * 
+	 * @param value
+	 *            The value to be entered into the field.
+	 * @param key
+	 *            A key existing in a page object file.
+	 */
+	@When("^the user enters \"([^\"]*)\" into \"([^\"]*)\" field$")
+	public void I_enters_into_the_field(String value, String key) {
+		// setField(getLocator(key), value); //call to MyStepDefinition to get
+		// the locator from page objects. call to cucumber-selenium to send the
+		// value to the field.
+
+		if (value.contains("%")) { // If the value should call a method.
+			value = parseInfo(value); // get the new value.
+
+		}
+		setField(getLocator(key), value); // set the value.
+
+	}
+
+	public String parseInfo(String value) {
+		String[] temp = value.split("%"); // split the value into sections
+											// around the %
+		String[] method; // array to hold method and args.
+		value = ""; // clear value to hold new value.
+		for (String s : temp) {
+			if (s.startsWith("RANDOM")) {// if this segment is a call to the
+											// random method
+				if (s.contains(",")) {// if this call has arguments.
+					method = s.split(",");// parse the arguments.
+					value += getRandom(Integer.parseInt(method[1]));// call
+																	// random
+																	// method
+																	// with
+																	// argument.
+				} else {
+					value += getRandom(10);// call random method with default
+											// argument.
+				}
+			} else {
+				value += s;// add segment to value.
+			}
+		}
+
+		return value;// return new value.
+	}
+
+	public String getRandom(int length) {
+		Random rng = new Random();// random object
+		String out = "";
+		for (int ii = 0; ii < length; ii++) {// loop to set length.
+			out += rng.nextInt(10);// append single digit number.
+		}
+		return out;// return number.
+
+	}
+
+	/**
+	 * Types a value into a field.
+	 * 
+	 * @param value
+	 *            The value to be entered into the field.
+	 * @param key
+	 *            A key existing in a page object file.
+	 */
+	@When("^the user enters \"([^\"]*)\" into comments field$")
+	public void I_enters_into_the_comments_field(String value) {
+
+		WebElement commentPipeline = driver.findElement(By.xpath("//*[@id='cke_1_contents']/iframe"));
+		// setField(getLocator(key), value); //call to MyStepDefinition to get
+		// the locator from page objects. call to cucumber-selenium to send the
+		// value to the field.
+		Actions actions = new Actions(driver);
+		actions.moveToElement(commentPipeline);
+		actions.click();
+		actions.sendKeys(value);
+		actions.build().perform();
+	}
+
+	/**
+	 * Sets the value of a dropdown by visible text.
+	 * 
+	 * @param value
+	 *            The visible text to set the dropdown value to.
+	 * @param key
+	 *            A key existing in a page object file.
+	 */
+	@When("^the user selects \"([^\"]*)\" from \"([^\"]*)\" pick list$")
+	public void I_selects_from_the_dropdown(String value, String key) {
+		try {
+			setSelect(getLocator(key), value);// call to MyStepDefinition to get
+												// the locator from page
+												// objects. call to
+												// cucumber-selenium to set the
+												// dropdown value.
+		} catch (StaleElementReferenceException rolltide) {
+			sleep(2);
+			setSelect(getLocator(key), value);
+		}
+	}
+
+	/**
+	 * Sets the value of a multi select list by visible text.
+	 * 
+	 * @param value
+	 *            The visible text to set the dropdown value to.
+	 * @param key
+	 *            A key existing in a page object file.
+	 */
+	@When("^the user selects \"([^\"]*)\" from \"([^\"]*)\" multi select list$")
+	public void I_selects_from_the_multi(String value, String key) {
+		setSelect(getLocator(key), value);// call to MyStepDefinition to get the
+											// locator from page objects. call
+											// to cucumber-selenium to set the
+											// dropdown value.
+	}
+
+	/**
+	 * Handles radio button interactions based on the action described.
+	 * 
+	 * @param action
+	 *            The action to be performed on the radio button.
+	 * @param key
+	 *            A key existing in a page objects file.
+	 */
+	@When("^I (.*) the \"([^\"]*)\" radio button$")
+	public void I_the_radio_button(String action, String key) {
+		if (action.equalsIgnoreCase("select")) { // if the radion button should
+													// be selected.
+			setRadioButtonState(getLocator(key), true);// call to
+														// cucumber-selenium to
+														// set the radio button
+														// state to
+														// selected=true.
+		} else if (action.equalsIgnoreCase("deselect") || action.equalsIgnoreCase("unselect")) {// if
+																								// the
+																								// radio
+																								// button
+																								// should
+																								// not
+																								// be
+																								// selected
+			setRadioButtonState(getLocator(key), false);// call to
+														// cucumber-selenium to
+														// set the radion button
+														// state to
+														// selected=false.
+		} else if (action.equalsIgnoreCase("click")) {// if the radio button
+														// should be clicked and
+														// left in an unknown
+														// state.
+			clickElement(getLocator(key));// call to cucumber-selenium to click
+											// the radio button.
+		} else {
+			fail(key + " radio button can only have state=selected or state=unselected."); // fails
+																							// the
+																							// test
+																							// due
+																							// to
+																							// lack
+																							// of
+																							// logic
+																							// to
+																							// handle
+																							// the
+																							// inputs.
+		}
+	}
+
+	/**
+	 * Clicks a button.
+	 * 
+	 * @param key
+	 *            A key existing in a page objects file.
+	 */
+	@When("^the user clicks \"([^\"]*)\"$")
+	public void the_users_clicks(String key) {
+		clickElement(getLocator(key));// call to cucumber-selenium to click an
+										// element.
+	}
+
+	/**
+	 * Double Clicks a button.
+	 * 
+	 * @param key
+	 *            A key existing in a page objects file.
+	 */
+	@When("^the user double clicks \"([^\"]*)\"$")
+	public void the_users_double_clicks(String key) {
+		WebElement element = driver.findElement(getLocator(key));
+		Actions builder = new Actions(driver);
+		builder.doubleClick(element).perform();
+
+	}
+	
+	
+	
+	/**
+	 * click OK Alert.
+	 * 
+	 */
+	@When("^the user clicks OK$")
+	public void the_users_clicks_ok() {
+		// Switching to Alert        
+        Alert alert = driver.switchTo().alert();		
+       
+        // Accepting alert		
+        alert.accept();		
+
+	}
+	
+	
+	
+
+	/**
+	 * Clicks a link.
+	 * 
+	 * @param key
+	 *            A key existing in a page objects file.
+	 */
+	@When("^the user clicks \"([^\"]*)\" link$")
+	public void the_users_clicks_link(String key) {
+		clickElement(getLocator(key));// call to cucumber-selenium to click an
+										// element.
+	}
+
+	/**
+	 * Handles checkbox interactions based on the action described.
+	 * 
+	 * @param action
+	 *            The action to be performed on the radio button.
+	 * @param key
+	 *            A key existing in a page objects file.
+	 */
+	@When("^the user (.*) the \"([^\"]*)\" element$")
+	public void I_the_element(String action, String key) {
+		if (action.equalsIgnoreCase("checks") || action.equalsIgnoreCase("selects")) {// if
+																						// the
+																						// element
+																						// should
+																						// be
+																						// selected.
+			setCheckboxState(getLocator(key), true);// call to cucumber-selenium
+													// to set the element state
+													// to selected=true.
+		} else if (action.equalsIgnoreCase("unchecks") || action.equalsIgnoreCase("unselects")) {// if
+																									// the
+																									// element
+																									// should
+																									// be
+																									// unselected
+			setCheckboxState(getLocator(key), false);// call to
+														// cucumber-selenium to
+														// set the element state
+														// to selected=true.
+		} else {
+			fail(key + " checkbox can only have state=checked or state=unchecked.");// fails
+																					// the
+																					// test
+																					// due
+																					// to
+																					// lack
+																					// of
+																					// logic
+																					// to
+																					// handle
+																					// the
+																					// inputs.
+		}
+	}
+
+	/**
+	 * Verifies the text of an element matches the given text. Case-sensitive.
+	 * 
+	 * @param key
+	 *            The key existing in a page objects file.
+	 * @param expected
+	 *            The text expected to be in the element.
+	 */
+	@Then("^the \"([^\"]*)\" element says \"([^\"]*)\"$")
+	public void the_element_says(String key, String expected) {
+		assertTrue(elementTextMatches(getLocator(key), expected, true));// call
+																		// to
+																		// cucumber-selenium
+																		// to
+																		// verify
+																		// the
+																		// text
+																		// of an
+																		// element
+																		// is
+																		// correct.
+	}
+	
+	
+	
+	
+	/**
+	 * Determine whether the element contains a given substring or another string.
+	 * 
+	 * @param locator
+	 *            Locator used to locate the element.
+	 * @param substring
+	 *            The substring to search for.
+	 * @return true if the result of the getElementText(By) method returns a
+	 *         string containing substring, false otherwise.
+	 */
+	@Then("^the \"([^\"]*)\" element contains \"([^\"]*)\" or \"([^\"]*)\"$")
+	public void the_element_contains_or(String key, String expected, String expected2) {
+		
+		
+		
+
+		assertTrue(elementContainsSubstring(getLocator(key), expected) || elementContainsSubstring(getLocator(key), expected2));// call
+																		// to
+																		// cucumber-selenium
+																		// to
+																		// verify
+																		// the
+																		// text
+																		// of an
+																		// element
+																		// is
+																		// correct.
+
+	}
+	
+	
+	
+
+	/**
+	 * Determine whether the element contains a given substring or not.
+	 * 
+	 * @param locator
+	 *            Locator used to locate the element.
+	 * @param substring
+	 *            The substring to search for.
+	 * @return true if the result of the getElementText(By) method returns a
+	 *         string containing substring, false otherwise.
+	 */
+	@Then("^the \"([^\"]*)\" element contains \"([^\"]*)\"$")
+	public void the_element_contains(String key, String expected) {
+
+		assertTrue(elementContainsSubstring(getLocator(key), expected));// call
+																		// to
+																		// cucumber-selenium
+																		// to
+																		// verify
+																		// the
+																		// text
+																		// of an
+																		// element
+																		// is
+																		// correct.
+
+	}
+
+	/**
+	 * Determine whether the element contains a given substring or not.
+	 * 
+	 * @param locator
+	 *            Locator used to locate the element.
+	 * @param substring
+	 *            The substring to search for.
+	 * @return true if the result of the getElementText(By) method returns a
+	 *         string containing substring, false otherwise.
+	 */
+	@Then("^the \"([^\"]*)\" is not present$")
+	public void the_is_not_present(String arg1) {
+
+		// assertTrue(!elementContainsSubstring(getLocator(key),
+		// expected));//call to cucumber-selenium to verify the text of an
+		// element is correct.
+		List<WebElement> elementNotPresent = driver.findElements(By.xpath("//*[text()='" + arg1 + "']"));
+		assertTrue(elementNotPresent.isEmpty());
+
+	}
+
+	@Then("^the \"([^\"]*)\" element does not contain \"([^\"]*)\"$")
+	public void the_element_does_not_contain(String key, String expected) {
+
+		assertTrue(!elementContainsSubstring(getLocator(key), expected));// call
+																			// to
+																			// cucumber-selenium
+																			// to
+																			// verify
+																			// the
+																			// text
+																			// of
+																			// an
+																			// element
+																			// is
+																			// correct.
+		// List<WebElement> elementNotPresent =
+		// driver.findElements(By.xpath("//*[text()='" + arg1 + "']"));
+		// assertTrue(elementNotPresent.isEmpty());
+
+	}
+
+	/**
+	 * Verifies the element is clickable.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@Then("^the \"([^\"]*)\" is clickable$")
+	public void the_is_clickable(String key) {
+		elementIsClickable(getLocator(key));
+	}
+
+	/**
+	 * Verifies the element is visible.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@Then("^the \"([^\"]*)\" is visible$")
+	public void the_is_visible(String key) {
+		elementIsVisible(getLocator(key));
+	}
+	
+	
+	/**
+	 * Verifies the element is not visible.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@Then("^the \"([^\"]*)\" is not visible$")
+	public void the_is_not_visible(String key) {
+		//elementIsVisible(getLocator(key));
+		
+		List<WebElement> elementNotPresent = driver.findElements(getLocator(key));
+		assertTrue(elementNotPresent.isEmpty());
+		
+		
+	}
+	
+	
+	
+	
+	
+
+	/**
+	 * Verifies that an element's attribute is set to a certain value.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 * @param attribute
+	 *            The attribute being tested.
+	 * @param value
+	 *            The value expected.
+	 */
+	@Then("^the \"([^\"]*)\" element \"([^\"]*)\" attribute is \"([^\"]*)\"$")
+	public void the_element_attribute_is(String key, String attribute, String value) {
+		elementAttributeIs(getLocator(key), attribute, value);
+	}
+
+	/**
+	 * Clicks an element while applying a modifier key.
+	 * 
+	 * @param mod
+	 *            The modifier to be used. can be SHIFT, CONTROL, COMMAND, or
+	 *            ALT.
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@When("^the user \"([^\"]*)\" clicks the \"([^\"]*)\"$")
+	public void i_click_the(String mod, String key) {
+		clickElementWithModifier(mod, getLocator(key));
+	}
+
+	/**
+	 * Switch tabs until the tab with the given title is found, or the all tabs
+	 * have been searched. Will return to the original tab if the target tab is
+	 * not found.
+	 * 
+	 * @param title
+	 *            The title of the tab to switch to.
+	 */
+	@When("^the user switches to \"([^\"]*)\" window$")
+	public void i_switch_to_the_tab(String title) {
+		System.out.println("****STARTING WINDOW SWITCH METHOD*********");
+		String url = getWindowUrl(title, env);
+		boolean switched = false;
+		String origin = "";
+		try {
+			origin = driver.getWindowHandle();
+		} catch (Exception e) {
+			System.out.println("origin window was closed.");
+		}
+		Set<String> handles = driver.getWindowHandles();
+		System.out.println("number of window handles: " + handles.size());
+		for (String handle : handles) {
+			System.out.println("Window Handle: " + handle);
+			driver.switchTo().window(handle);
+			System.out.println("comparing [" + url + "] and [" + driver.getCurrentUrl() + "].");
+			if (driver.getCurrentUrl().equals(url)) {
+				switched = true;
+				break;
+			}
+		}
+		if (!switched && handles.contains(origin)) {
+			driver.switchTo().window(origin);
+		}
+		System.out.println("****ENDING WINDOW SWITCH METHOD*********");
+
+	}
+
+	@When("^the user switches to the \"([^\"]*)\" frame$")
+	public void switchToFrame(String frame) {
+		System.out.println("About to switch frame");
+		if (frame.equalsIgnoreCase("default")) {
+			System.out.println("About to switch to Default frame");
+			switchToDefaultContent();
+		} else {
+			System.out.println("About to switch specific frame: " + frame);
+
+			// Set<String> handles = driver.getWindowHandles();
+			// for(String handle: handles){
+			// System.out.println("Window name: " + handle);
+			// }
+			switchToIFrame(getLocator(frame));
+		}
+		System.out.println("Switching complete");
+	}
+
+	/**
+	 * Verifies an element is selected.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@Then("^the \"([^\"]*)\" is selected$")
+	public void the_is_selected(String key) {
+		elementIsSelected(getLocator(key));
+	}
+
+	/**
+	 * Moves the mouse to hover over an element.
+	 * 
+	 * @param key
+	 *            The key to identify the element.
+	 */
+	@When("^the user hovers over the \"([^\"]*)\"$")
+	public void hover_over(String key) {
+		hoverOver(getLocator(key));
+	}
+
+	/**
+	 * Verifies the selected item in a dropdown box.
+	 * 
+	 * @param key
+	 *            The key to identify an element.
+	 * @param value
+	 *            The value that should be selected.
+	 */
+	@Then("the \"([^\"]*)\" dropdown shows \"([^\"]*)\"$")
+	public void the_dropdown_shows(String key, String value) {
+		dropDownDisplays(getLocator(key), value);
+	}
+
+	@Given("^the user is logged in to Salesforce as \"([^\"]*)\" SSO$")
+	public void the_user_is_logged_in_to_salesforce_as(String username) {
+		String userUrl = getUserUrl(username);
+		System.out.println("The User URL: " + userUrl);
+		if (env.equalsIgnoreCase("UAT")) {
+			userUrl = userUrl.replace("<envCode>", "cs65");
+		} else if (env.equalsIgnoreCase("QA")) {
+			userUrl = userUrl.replace("<envCode>", "cs8");
+
+		}
+		System.out.println(userUrl);
+
+		navigateTo(userUrl);
+		sleep(5);
+		// try{
+		// the_users_clicks("BacktoServiceCallCenter");
+		// the_users_clicks("CallCenterHomepage");
+		// }catch(Exception e){
+		// e.printStackTrace();
+		// the_users_clicks("UseridLogin");
+		// the_users_clicks("BacktoServiceCallCenter");
+		// the_users_clicks("CallCenterHomepage");
+		// }
+	}
+
+	@Given("^the user is logged in to Salesforce as \"([^\"]*)\"$")
+	public void the_user_is_logged_in_to_salesforce_as_Profile(String userprofile) {
+		String profile = getUserProfile(userprofile);
+		WebElement userName = driver.findElement(By.id("username"));
+		userName.sendKeys(profile);
+		WebElement password = driver.findElement(By.id("password"));
+		password.sendKeys("testing2017");
+
+		WebElement loginButton = driver.findElement(By.id("Login"));
+		loginButton.click();
+	}
+
+	@Given("^the user is logged in to Salesforce as \"([^\"]*)\" BCIS$")
+	public void the_user_is_logged_in_to_salesforce_as_Profile_BCIS(String userprofile) {
+		String profile = getUserProfile(userprofile);
+		WebElement userName = driver.findElement(By.id("username"));
+		userName.sendKeys(profile);
+		WebElement password = driver.findElement(By.id("password"));
+		password.sendKeys("Test2017!");
+
+		WebElement loginButton = driver.findElement(By.id("Login"));
+		loginButton.click();
+	}
+
+	@Given("^the user is logged in to Salesforce as \"([^\"]*)\" TM$")
+	public void the_user_is_logged_in_to_salesforce_as_Profile_TM(String userprofile) {
+		String profile = getUserProfile(userprofile);
+		WebElement userName = driver.findElement(By.id("username"));
+		userName.sendKeys(profile);
+		WebElement password = driver.findElement(By.id("password"));
+		password.sendKeys("Test2017!");
+
+		WebElement loginButton = driver.findElement(By.id("Login"));
+		loginButton.click();
+	}
+
+	@Then("the \"([^\"]*)\" dropdown shows the correct values$")
+	public void showsCorrect(String key) {
+		WebElement ele = findElement(getLocator(key));
+		ArrayList<String> list = new ArrayList<String>();
+		for (WebElement e : ele.findElements(By.xpath("./option"))) {
+			list.add(e.getText());
+		}
+		String[] actual = list.toArray(new String[list.size()]);
+		Arrays.sort(actual);
+		String[] expected = getDropBoxOptions(key);
+		Arrays.sort(expected);
+		if (actual.length != expected.length) {
+			fail("expected " + expected.length + " options from " + key + " but found " + actual.length + ".");
+		}
+
+		for (int ii = 0; ii < expected.length; ii++) {
+			if (!expected[ii].equals(actual[ii])) {
+				fail("found " + actual[ii] + " in " + key + "while expecting " + expected[ii] + ".");
+			}
+		}
+
+	}
+
+}
